@@ -1,0 +1,11 @@
+ Mobil {
+constructor(merk, warna) {
+this.merk = merk;
+this.warna = warna;
+}
+info() {
+return `Mobil ini adalah ${this.merk} berwarna ${this.warna}.`;
+}
+}
+const honda = new Mobil("Honda Civic Turbo", "Black");
+console.log(honda.info())

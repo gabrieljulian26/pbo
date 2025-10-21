@@ -1,38 +1,34 @@
-class Mobil {
-// Konstruktor untuk inisialisasi objek
-constructor(merek, model, tahun) {
-  this.merek = merek;   // Properti objek
-  this.model = model;
-  this.tahun = tahun;
-}
-// Metode untuk menampilkan informasi mobil
-displayInfo() {
-  console.log(`Mobil: ${this.merek} ${this.model} (${this.tahun})`);
-}
-}
-// Instansiasi objek dari kelas Mobil
-const mobil1 = new Mobil('Toyota', 'Corolla', 2020); // Membuat objek mobil1
-const mobil2 = new Mobil('Honda', 'Civic', 2021);    // Membuat objek mobil2
-// Memanggil metode untuk menampilkan informasi
-mobil1.displayInfo(); // Output: Mobil: Toyota Corolla (2020)
-mobil2.displayInfo(); // Output: Mobil: Honda Civic (2021)
-
-class Hewan {
-  speak() {
-    console.log("Hewan berbicara");
+class Buku {
+  #stok; // Properti private
+  #harga; // Properti private
+  
+  constructor(judul, stokAwal, harga) {
+    this.judul = judul;
+    this.#stok = stokAwal;
+    this.#harga = harga;
+  }
+  
+  getInfo() {
+    return `Buku: ${this.judul}\nStok: ${this.#stok}\nHarga: Rp${this.#harga}`;
+  }
+  
+  beli(jumlah, uangDibayar) {
+    const total = this.#harga * jumlah;
+    
+    if (uangDibayar < total) {
+      return `Uang kurang Rp${total - uangDibayar}`;
+    }
+    
+    this.#stok -= jumlah;
+    const kembalian = uangDibayar - total;
+    return `Pembelian berhasil! Kembalian: Rp${kembalian}`;
   }
 }
 
-class Anjing extends Hewan {
-  speak() {
-    console.log("Anjing menggonggong");
-  }
-}
+const buku1 = new Buku("Laskar Pelangi", 10, 50000);
+console.log(buku1.getInfo());
 
-let hewan1 = new Hewan();
-let hewan2 = new Anjing();
+console.log("\n" + buku1.beli(2, 150000));
+console.log("\n" + buku1.getInfo());
 
-hewan1.speak(); // Output: Hewan berbicara
-hewan2.speak(); // Output: Anjing menggonggong
-
-
+// console.log(buku1.#stok); // Error: properti private

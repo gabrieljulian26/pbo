@@ -98,22 +98,6 @@ ol {
   <input type="submit" value="Kirim">
 </form>
 
-<button onclick="ubahTeks()">Klik untuk Mengubah Judul</button>
-
-<script>
-function ubahTeks() {
-  const title = document.getElementById("title");
-  if (title.innerText === "Halo, Mahasiswa!") {
-    title.innerText = "Teks telah berubah!";
-  } else {
-    title.innerText = "Halo, Mahasiswa!";
-  }
-}
-
-function handleSubmit(event) {
-  event.preventDefault();
-  const inputValue = document.getElementById("inputText").value;
-  alert("Data yang dikirim: " + inputValue);
 }
 </script>
 </body>

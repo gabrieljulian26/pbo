@@ -68,7 +68,7 @@ ol {
 <h1 id="title">Halo, Mahasiswa!</h1>
 <h2>Selamat Datang di Biodata</h2>
 
-<p><b>Gabriel Julian </b> dan <i>Informatika Malam</i></p>
+<p><b>Gabriel Julian</b> dan <i>Informatika Malam</i></p>
 
 <h3>Tamatan Sekolah:</h3>
 <ol>
@@ -92,12 +92,14 @@ ol {
 <h3>Gambar Profil:</h3>
 <img src="https://github.com/gabrieljulian26/pbo/blob/main/IMG_20250405_193753_455.jpg" alt="Avatar">
 
-<h3>Form Input:</h3>
-<form onsubmit="handleSubmit(event)">
-  <input type="text" id="inputText" value="cobaan" placeholder="Masukkan teks...">
-  <input type="submit" value="Kirim">
-</form>
-
+<script>
+function ubahTeks() {
+  const title = document.getElementById("title");
+  if (title.innerText === "Halo, Mahasiswa!") {
+    title.innerText = "Teks telah berubah!";
+  } else {
+    title.innerText = "Halo, Mahasiswa!";
+  }
 }
 </script>
 </body>

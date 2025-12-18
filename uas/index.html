@@ -173,6 +173,12 @@
             <div class="switch-form">
                 Belum punya akun? <a onclick="showRegister()">Daftar disini</a>
             </div>
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; font-size: 12px; color: #666;">
+                <strong>Akun Demo:</strong><br>
+                1. Username: <strong>admin</strong> | Password: <strong>admin123</strong><br>
+                2. Username: <strong>user1</strong> | Password: <strong>password1</strong><br>
+                3. Username: <strong>user2</strong> | Password: <strong>password2</strong>
+            </div>
         </div>
 
         <!-- Form Registrasi -->
@@ -216,9 +222,39 @@
     </div>
 
     <script>
-        // Simpan data user di memori (dalam aplikasi nyata, gunakan database)
-        let users = {};
-        let currentUser = null;
+        // Inisialisasi user default jika belum ada
+        let defaultUsers = {
+            'admin': {
+                username: 'admin',
+                email: 'admin@example.com',
+                password: 'admin123'
+            },
+            'user1': {
+                username: 'user1',
+                email: 'user1@example.com',
+                password: 'password1'
+            },
+            'user2': {
+                username: 'user2',
+                email: 'user2@example.com',
+                password: 'password2'
+            }
+        };
+
+        // Ambil data dari localStorage atau gunakan default users
+        let users = JSON.parse(localStorage.getItem('users')) || defaultUsers;
+        
+        // Simpan default users ke localStorage jika belum ada
+        if (!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        // Jika ada user yang sedang login, tampilkan dashboard
+        if (currentUser) {
+            showDashboard();
+        }
 
         function showLogin() {
             document.getElementById('loginForm').classList.remove('hidden');
@@ -274,12 +310,13 @@
                 return;
             }
 
-            // Simpan user
+            // Simpan user ke localStorage
             users[username] = {
                 username: username,
                 email: email,
                 password: password
             };
+            localStorage.setItem('users', JSON.stringify(users));
 
             showAlert('registerAlert', 'Registrasi berhasil! Silakan login.', 'success');
             
@@ -303,22 +340,29 @@
 
             // Cek kredensial
             if (!users[username]) {
-                showAlert('loginAlert', 'Username tidak ditemukan!', 'error');
+                showAlert('loginAlert', 'Gagal login! Username tidak ditemukan.', 'error');
                 return;
             }
 
             if (users[username].password !== password) {
-                showAlert('loginAlert', 'Password salah!', 'error');
+                showAlert('loginAlert', 'Gagal login! Password salah.', 'error');
                 return;
             }
 
             // Login berhasil
             currentUser = users[username];
-            showDashboard();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showAlert('loginAlert', `Hi ${username}! Login berhasil, mengalihkan...`, 'success');
+            
+            // Tunggu 1.5 detik sebelum ke dashboard
+            setTimeout(() => {
+                showDashboard();
+            }, 1500);
         }
 
         function handleLogout() {
             currentUser = null;
+            localStorage.removeItem('currentUser');
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
             showLogin();

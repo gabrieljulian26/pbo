@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Login & Registrasi</title>
+    <title>Sistem Login & Registrasi - OOP</title>
     <style>
         * {
             margin: 0;
@@ -82,13 +82,6 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        input[type="text"]:disabled,
-        input[type="password"]:disabled,
-        input[type="email"]:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
         }
 
         button {
@@ -338,7 +331,7 @@
         <div id="loginForm">
             <h2>🔐 Login</h2>
             <div id="loginAlert"></div>
-            <form onsubmit="handleLogin(event)">
+            <form id="loginFormElement">
                 <div class="form-group">
                     <label for="loginUsername">Username</label>
                     <input type="text" id="loginUsername" placeholder="Masukkan username" required autocomplete="username">
@@ -350,7 +343,7 @@
                 <button type="submit" id="loginBtn">Login</button>
             </form>
             <div class="switch-form">
-                Belum punya akun? <a onclick="showRegister()">Daftar disini</a>
+                Belum punya akun? <a id="linkToRegister">Daftar disini</a>
             </div>
             
             <div class="demo-accounts">
@@ -361,7 +354,7 @@
             </div>
             
             <div class="form-footer">
-                © 2024 Sistem Login. All rights reserved.
+                © 2024 Sistem Login - OOP Architecture. All rights reserved.
             </div>
         </div>
 
@@ -369,7 +362,7 @@
         <div id="registerForm" class="hidden">
             <h2>📝 Daftar Akun Baru</h2>
             <div id="registerAlert"></div>
-            <form onsubmit="handleRegister(event)">
+            <form id="registerFormElement">
                 <div class="form-group">
                     <label for="regUsername">Username *</label>
                     <input type="text" id="regUsername" placeholder="Pilih username unik" required autocomplete="username">
@@ -393,11 +386,11 @@
                 <button type="submit" id="registerBtn">Daftar Sekarang</button>
             </form>
             <div class="switch-form">
-                Sudah punya akun? <a onclick="showLogin()">Login disini</a>
+                Sudah punya akun? <a id="linkToLogin">Login disini</a>
             </div>
             
             <div class="form-footer">
-                © 2024 Sistem Login. All rights reserved.
+                © 2024 Sistem Login - OOP Architecture. All rights reserved.
             </div>
         </div>
 
@@ -433,384 +426,493 @@
                 </p>
             </div>
             
-            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
         </div>
     </div>
 
     <script>
         // ============================================
-        // KONFIGURASI & INISIALISASI DATA
+        // CLASS: User (Model)
+        // Representasi object User dengan enkapsulasi data
         // ============================================
-        
-        /**
-         * Default users untuk sistem
-         * Setiap user memiliki properti lengkap
-         */
-        const defaultUsers = {
-            'admin': {
-                username: 'admin',
-                email: 'admin@example.com',
-                password: 'admin123',
-                role: 'Administrator',
-                joinDate: '2024-01-01',
-                status: 'active',
-                phone: '+62 812-3456-7890'
-            },
-            'user1': {
-                username: 'user1',
-                email: 'user1@example.com',
-                password: 'password1',
-                role: 'Member',
-                joinDate: '2024-06-15',
-                status: 'active',
-                phone: '+62 813-1111-2222'
-            },
-            'user2': {
-                username: 'user2',
-                email: 'user2@example.com',
-                password: 'password2',
-                role: 'Member',
-                joinDate: '2024-11-20',
-                status: 'active',
-                phone: '+62 814-3333-4444'
-            }
-        };
+        class User {
+            #password; // Private field untuk keamanan
 
-        // Ambil data dari localStorage atau gunakan default users
-        let users = JSON.parse(localStorage.getItem('users')) || defaultUsers;
-        
-        // Simpan default users ke localStorage jika belum ada
-        if (!localStorage.getItem('users')) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-        
-        // Cek apakah ada user yang sedang login
-        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-
-        // Jika ada user yang sedang login, tampilkan dashboard
-        if (currentUser) {
-            showDashboard();
-        }
-
-        // ============================================
-        // FUNGSI NAVIGASI ANTAR HALAMAN
-        // ============================================
-        
-        /**
-         * Menampilkan halaman login
-         */
-        function showLogin() {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('dashboard').classList.add('hidden');
-            clearAlerts();
-            resetForms();
-        }
-
-        /**
-         * Menampilkan halaman registrasi
-         */
-        function showRegister() {
-            document.getElementById('registerForm').classList.remove('hidden');
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('dashboard').classList.add('hidden');
-            clearAlerts();
-            resetForms();
-        }
-
-        /**
-         * Menampilkan dashboard user
-         */
-        function showDashboard() {
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.add('hidden');
-            
-            // Tampilkan info user lengkap dengan badge
-            document.getElementById('dashUsername').textContent = currentUser.username;
-            document.getElementById('dashEmail').textContent = currentUser.email;
-            
-            // Role dengan badge
-            const roleElement = document.getElementById('dashRole');
-            const roleBadgeClass = currentUser.role === 'Administrator' ? 'badge-admin' : 'badge-member';
-            roleElement.innerHTML = `<span class="badge ${roleBadgeClass}">${currentUser.role || 'Member'}</span>`;
-            
-            // Status dengan badge
-            const statusElement = document.getElementById('dashStatus');
-            statusElement.innerHTML = `<span class="badge badge-active">${currentUser.status || 'Active'}</span>`;
-            
-            document.getElementById('dashJoinDate').textContent = formatDate(currentUser.joinDate) || '-';
-            document.getElementById('dashPhone').textContent = currentUser.phone || 'Belum diisi';
-        }
-
-        // ============================================
-        // FUNGSI HELPER
-        // ============================================
-        
-        /**
-         * Menghapus semua pesan alert
-         */
-        function clearAlerts() {
-            document.getElementById('loginAlert').innerHTML = '';
-            document.getElementById('registerAlert').innerHTML = '';
-        }
-
-        /**
-         * Reset semua form input
-         */
-        function resetForms() {
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => form.reset());
-        }
-
-        /**
-         * Menampilkan pesan alert
-         * @param {string} elementId - ID element untuk menampilkan alert
-         * @param {string} message - Pesan yang akan ditampilkan
-         * @param {string} type - Tipe alert (success/error)
-         */
-        function showAlert(elementId, message, type) {
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
-            document.getElementById(elementId).innerHTML = 
-                `<div class="alert ${alertClass}">${message}</div>`;
-        }
-
-        /**
-         * Format tanggal ke format Indonesia
-         * @param {string} dateString - String tanggal
-         * @returns {string} - Tanggal terformat
-         */
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            return date.toLocaleDateString('id-ID', options);
-        }
-
-        /**
-         * Mendapatkan tanggal hari ini dalam format YYYY-MM-DD
-         * @returns {string} - Tanggal hari ini
-         */
-        function getTodayDate() {
-            return new Date().toISOString().split('T')[0];
-        }
-
-        /**
-         * Validasi email format
-         * @param {string} email - Email yang akan divalidasi
-         * @returns {boolean} - True jika valid
-         */
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-
-        /**
-         * Disable/enable button dengan loading state
-         * @param {string} buttonId - ID button
-         * @param {boolean} isLoading - State loading
-         */
-        function setButtonLoading(buttonId, isLoading) {
-            const button = document.getElementById(buttonId);
-            if (isLoading) {
-                button.disabled = true;
-                button.innerHTML = button.innerHTML + '<span class="loading"></span>';
-            } else {
-                button.disabled = false;
-                button.innerHTML = button.innerHTML.replace('<span class="loading"></span>', '');
-            }
-        }
-
-        // ============================================
-        // HANDLER REGISTRASI
-        // ============================================
-        
-        /**
-         * Handle proses registrasi user baru
-         * @param {Event} e - Event object dari form submit
-         */
-        function handleRegister(e) {
-            e.preventDefault();
-            
-            // Ambil nilai dari form
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const phone = document.getElementById('regPhone').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-
-            // Validasi username
-            if (username.length < 3) {
-                showAlert('registerAlert', 'Username minimal 3 karakter!', 'error');
-                return;
+            constructor(username, email, password, role = 'Member', phone = '', joinDate = null, status = 'active') {
+                this.username = username;
+                this.email = email;
+                this.#password = password;
+                this.role = role;
+                this.phone = phone;
+                this.joinDate = joinDate || this.getCurrentDate();
+                this.status = status;
             }
 
-            // Validasi username sudah terdaftar
-            if (users[username]) {
-                showAlert('registerAlert', 'Username sudah terdaftar! Silakan pilih username lain.', 'error');
-                return;
+            // Getter untuk password (enkapsulasi)
+            getPassword() {
+                return this.#password;
             }
 
-            // Validasi email format
-            if (!isValidEmail(email)) {
-                showAlert('registerAlert', 'Format email tidak valid!', 'error');
-                return;
+            // Setter untuk password dengan validasi
+            setPassword(newPassword) {
+                if (newPassword.length < 6) {
+                    throw new Error('Password minimal 6 karakter');
+                }
+                this.#password = newPassword;
             }
 
-            // Validasi email sudah terdaftar
-            const emailExists = Object.values(users).some(user => user.email === email);
-            if (emailExists) {
-                showAlert('registerAlert', 'Email sudah terdaftar! Gunakan email lain.', 'error');
-                return;
+            // Method untuk validasi password
+            validatePassword(inputPassword) {
+                return this.#password === inputPassword;
             }
 
-            // Validasi password
-            if (password.length < 6) {
-                showAlert('registerAlert', 'Password minimal 6 karakter!', 'error');
-                return;
+            // Method untuk get current date
+            getCurrentDate() {
+                return new Date().toISOString().split('T')[0];
             }
 
-            // Validasi konfirmasi password
-            if (password !== confirmPassword) {
-                showAlert('registerAlert', 'Password dan konfirmasi password tidak cocok!', 'error');
-                return;
-            }
-
-            // Set loading state
-            setButtonLoading('registerBtn', true);
-
-            // Simulasi proses registrasi (dalam kasus nyata, ini akan ke server)
-            setTimeout(() => {
-                // Simpan user baru ke localStorage
-                users[username] = {
-                    username: username,
-                    email: email,
-                    password: password,
-                    role: 'Member',
-                    joinDate: getTodayDate(),
-                    status: 'active',
-                    phone: phone || '-'
+            // Method untuk convert ke plain object (untuk storage)
+            toJSON() {
+                return {
+                    username: this.username,
+                    email: this.email,
+                    password: this.#password,
+                    role: this.role,
+                    phone: this.phone,
+                    joinDate: this.joinDate,
+                    status: this.status
                 };
-                localStorage.setItem('users', JSON.stringify(users));
+            }
 
-                // Reset loading state
-                setButtonLoading('registerBtn', false);
-
-                // Tampilkan pesan sukses
-                showAlert('registerAlert', '🎉 Registrasi berhasil! Silakan login dengan akun Anda.', 'success');
-                
-                // Reset form
-                resetForms();
-
-                // Pindah ke halaman login setelah 2 detik
-                setTimeout(() => {
-                    showLogin();
-                    showAlert('loginAlert', 'Akun berhasil dibuat! Silakan login.', 'success');
-                }, 2000);
-            }, 1000);
+            // Static method untuk create User dari object
+            static fromJSON(data) {
+                return new User(
+                    data.username,
+                    data.email,
+                    data.password,
+                    data.role,
+                    data.phone,
+                    data.joinDate,
+                    data.status
+                );
+            }
         }
 
         // ============================================
-        // HANDLER LOGIN
+        // CLASS: Validator (Utility)
+        // Handle semua validasi input
         // ============================================
-        
-        /**
-         * Handle proses login user
-         * @param {Event} e - Event object dari form submit
-         */
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            // Ambil nilai dari form
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            // Validasi username kosong
-            if (!username) {
-                showAlert('loginAlert', 'Username tidak boleh kosong!', 'error');
-                return;
+        class Validator {
+            static validateUsername(username) {
+                if (!username || username.trim().length < 3) {
+                    throw new Error('Username minimal 3 karakter');
+                }
+                return true;
             }
 
-            // Validasi password kosong
-            if (!password) {
-                showAlert('loginAlert', 'Password tidak boleh kosong!', 'error');
-                return;
+            static validateEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    throw new Error('Format email tidak valid');
+                }
+                return true;
             }
 
-            // Set loading state
-            setButtonLoading('loginBtn', true);
+            static validatePassword(password) {
+                if (password.length < 6) {
+                    throw new Error('Password minimal 6 karakter');
+                }
+                return true;
+            }
 
-            // Simulasi proses login (dalam kasus nyata, ini akan ke server)
-            setTimeout(() => {
-                // Cek apakah username terdaftar
-                if (!users[username]) {
-                    setButtonLoading('loginBtn', false);
-                    showAlert('loginAlert', '❌ Gagal login! Username tidak ditemukan.', 'error');
-                    return;
+            static validatePasswordMatch(password, confirmPassword) {
+                if (password !== confirmPassword) {
+                    throw new Error('Password dan konfirmasi password tidak cocok');
+                }
+                return true;
+            }
+        }
+
+        // ============================================
+        // CLASS: StorageManager (Data Access Layer)
+        // Handle semua operasi localStorage
+        // ============================================
+        class StorageManager {
+            constructor() {
+                this.USERS_KEY = 'users';
+                this.CURRENT_USER_KEY = 'currentUser';
+            }
+
+            // Get all users
+            getAllUsers() {
+                const data = localStorage.getItem(this.USERS_KEY);
+                if (!data) return {};
+                
+                const usersData = JSON.parse(data);
+                const users = {};
+                
+                // Convert plain objects to User instances
+                for (const [username, userData] of Object.entries(usersData)) {
+                    users[username] = User.fromJSON(userData);
+                }
+                
+                return users;
+            }
+
+            // Save all users
+            saveAllUsers(users) {
+                const usersData = {};
+                for (const [username, user] of Object.entries(users)) {
+                    usersData[username] = user.toJSON();
+                }
+                localStorage.setItem(this.USERS_KEY, JSON.stringify(usersData));
+            }
+
+            // Get single user
+            getUser(username) {
+                const users = this.getAllUsers();
+                return users[username] || null;
+            }
+
+            // Save single user
+            saveUser(user) {
+                const users = this.getAllUsers();
+                users[user.username] = user;
+                this.saveAllUsers(users);
+            }
+
+            // Check if username exists
+            userExists(username) {
+                return this.getUser(username) !== null;
+            }
+
+            // Check if email exists
+            emailExists(email) {
+                const users = this.getAllUsers();
+                return Object.values(users).some(user => user.email === email);
+            }
+
+            // Get current logged in user
+            getCurrentUser() {
+                const data = localStorage.getItem(this.CURRENT_USER_KEY);
+                return data ? User.fromJSON(JSON.parse(data)) : null;
+            }
+
+            // Set current logged in user
+            setCurrentUser(user) {
+                localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(user.toJSON()));
+            }
+
+            // Remove current user (logout)
+            removeCurrentUser() {
+                localStorage.removeItem(this.CURRENT_USER_KEY);
+            }
+
+            // Initialize with default users
+            initializeDefaultUsers() {
+                if (Object.keys(this.getAllUsers()).length === 0) {
+                    const defaultUsers = {
+                        admin: new User('admin', 'admin@example.com', 'admin123', 'Administrator', '+62 812-3456-7890', '2024-01-01'),
+                        user1: new User('user1', 'user1@example.com', 'password1', 'Member', '+62 813-1111-2222', '2024-06-15'),
+                        user2: new User('user2', 'user2@example.com', 'password2', 'Member', '+62 814-3333-4444', '2024-11-20')
+                    };
+                    this.saveAllUsers(defaultUsers);
+                }
+            }
+        }
+
+        // ============================================
+        // CLASS: UIManager (View Controller)
+        // Handle semua operasi UI dan DOM manipulation
+        // ============================================
+        class UIManager {
+            constructor() {
+                this.loginForm = document.getElementById('loginForm');
+                this.registerForm = document.getElementById('registerForm');
+                this.dashboard = document.getElementById('dashboard');
+            }
+
+            showLogin() {
+                this.loginForm.classList.remove('hidden');
+                this.registerForm.classList.add('hidden');
+                this.dashboard.classList.add('hidden');
+                this.clearAllAlerts();
+                this.resetAllForms();
+            }
+
+            showRegister() {
+                this.registerForm.classList.remove('hidden');
+                this.loginForm.classList.add('hidden');
+                this.dashboard.classList.add('hidden');
+                this.clearAllAlerts();
+                this.resetAllForms();
+            }
+
+            showDashboard(user) {
+                this.dashboard.classList.remove('hidden');
+                this.loginForm.classList.add('hidden');
+                this.registerForm.classList.add('hidden');
+                this.renderUserInfo(user);
+            }
+
+            renderUserInfo(user) {
+                document.getElementById('dashUsername').textContent = user.username;
+                document.getElementById('dashEmail').textContent = user.email;
+                
+                const roleElement = document.getElementById('dashRole');
+                const roleBadgeClass = user.role === 'Administrator' ? 'badge-admin' : 'badge-member';
+                roleElement.innerHTML = `<span class="badge ${roleBadgeClass}">${user.role}</span>`;
+                
+                const statusElement = document.getElementById('dashStatus');
+                statusElement.innerHTML = `<span class="badge badge-active">${user.status}</span>`;
+                
+                document.getElementById('dashJoinDate').textContent = this.formatDate(user.joinDate);
+                document.getElementById('dashPhone').textContent = user.phone || 'Belum diisi';
+            }
+
+            showAlert(elementId, message, type) {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+                document.getElementById(elementId).innerHTML = 
+                    `<div class="alert ${alertClass}">${message}</div>`;
+            }
+
+            clearAlert(elementId) {
+                document.getElementById(elementId).innerHTML = '';
+            }
+
+            clearAllAlerts() {
+                this.clearAlert('loginAlert');
+                this.clearAlert('registerAlert');
+            }
+
+            resetAllForms() {
+                document.querySelectorAll('form').forEach(form => form.reset());
+            }
+
+            setButtonLoading(buttonId, isLoading, originalText) {
+                const button = document.getElementById(buttonId);
+                if (isLoading) {
+                    button.disabled = true;
+                    button.innerHTML = originalText + '<span class="loading"></span>';
+                } else {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                const date = new Date(dateString);
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('id-ID', options);
+            }
+        }
+
+        // ============================================
+        // CLASS: AuthenticationService (Business Logic)
+        // Handle authentication logic
+        // ============================================
+        class AuthenticationService {
+            constructor(storageManager) {
+                this.storage = storageManager;
+            }
+
+            // Login method
+            login(username, password) {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        const user = this.storage.getUser(username);
+                        
+                        if (!user) {
+                            reject(new Error('Username tidak ditemukan'));
+                            return;
+                        }
+
+                        if (!user.validatePassword(password)) {
+                            reject(new Error('Password salah'));
+                            return;
+                        }
+
+                        this.storage.setCurrentUser(user);
+                        resolve(user);
+                    }, 1000);
+                });
+            }
+
+            // Register method
+            register(userData) {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            // Validasi input
+                            Validator.validateUsername(userData.username);
+                            Validator.validateEmail(userData.email);
+                            Validator.validatePassword(userData.password);
+                            Validator.validatePasswordMatch(userData.password, userData.confirmPassword);
+
+                            // Check username exists
+                            if (this.storage.userExists(userData.username)) {
+                                reject(new Error('Username sudah terdaftar'));
+                                return;
+                            }
+
+                            // Check email exists
+                            if (this.storage.emailExists(userData.email)) {
+                                reject(new Error('Email sudah terdaftar'));
+                                return;
+                            }
+
+                            // Create new user
+                            const newUser = new User(
+                                userData.username,
+                                userData.email,
+                                userData.password,
+                                'Member',
+                                userData.phone || ''
+                            );
+
+                            // Save user
+                            this.storage.saveUser(newUser);
+                            resolve(newUser);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 1000);
+                });
+            }
+
+            // Logout method
+            logout() {
+                this.storage.removeCurrentUser();
+            }
+
+            // Get current user
+            getCurrentUser() {
+                return this.storage.getCurrentUser();
+            }
+        }
+
+        // ============================================
+        // CLASS: Application (Main Controller)
+        // Orchestrate semua komponen
+        // ============================================
+        class Application {
+            constructor() {
+                this.storage = new StorageManager();
+                this.ui = new UIManager();
+                this.auth = new AuthenticationService(this.storage);
+                
+                this.init();
+            }
+
+            init() {
+                // Initialize default users
+                this.storage.initializeDefaultUsers();
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Check if user is logged in
+                const currentUser = this.auth.getCurrentUser();
+                if (currentUser) {
+                    this.ui.showDashboard(currentUser);
+                } else {
+                    this.ui.showLogin();
                 }
 
-                // Cek apakah password benar
-                if (users[username].password !== password) {
-                    setButtonLoading('loginBtn', false);
-                    showAlert('loginAlert', '❌ Gagal login! Password salah.', 'error');
-                    return;
+                console.log('🚀 Sistem Login & Registrasi (OOP) telah dimuat');
+                console.log('📊 Total users:', Object.keys(this.storage.getAllUsers()).length);
+                console.log('👤 Current user:', currentUser ? currentUser.username : 'Belum login');
+            }
+
+            setupEventListeners() {
+                // Login form
+                document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                // Register form
+                document.getElementById('registerFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegister();
+                });
+
+                // Navigation links
+                document.getElementById('linkToRegister').addEventListener('click', () => {
+                    this.ui.showRegister();
+                });
+
+                document.getElementById('linkToLogin').addEventListener('click', () => {
+                    this.ui.showLogin();
+                });
+
+                // Logout button
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+            }
+
+            async handleLogin() {
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+
+                this.ui.setButtonLoading('loginBtn', true, 'Login');
+
+                try {
+                    const user = await this.auth.login(username, password);
+                    this.ui.showAlert('loginAlert', `✅ Hi ${username}! Login berhasil, mengalihkan ke dashboard...`, 'success');
+                    
+                    setTimeout(() => {
+                        this.ui.showDashboard(user);
+                        this.ui.setButtonLoading('loginBtn', false, 'Login');
+                    }, 1500);
+                } catch (error) {
+                    this.ui.setButtonLoading('loginBtn', false, 'Login');
+                    this.ui.showAlert('loginAlert', `❌ Gagal login! ${error.message}`, 'error');
                 }
+            }
 
-                // Login berhasil
-                currentUser = users[username];
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // Reset loading state
-                setButtonLoading('loginBtn', false);
-                
-                // Tampilkan pesan sukses
-                showAlert('loginAlert', `✅ Hi ${username}! Login berhasil, mengalihkan ke dashboard...`, 'success');
-                
-                // Tunggu 1.5 detik sebelum ke dashboard
-                setTimeout(() => {
-                    showDashboard();
-                }, 1500);
-            }, 1000);
-        }
+            async handleRegister() {
+                const userData = {
+                    username: document.getElementById('regUsername').value.trim(),
+                    email: document.getElementById('regEmail').value.trim(),
+                    phone: document.getElementById('regPhone').value.trim(),
+                    password: document.getElementById('regPassword').value,
+                    confirmPassword: document.getElementById('regConfirmPassword').value
+                };
 
-        // ============================================
-        // HANDLER LOGOUT
-        // ============================================
-        
-        /**
-         * Handle proses logout user
-         */
-        function handleLogout() {
-            // Konfirmasi logout
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                // Hapus data login dari localStorage
-                currentUser = null;
-                localStorage.removeItem('currentUser');
-                
-                // Reset form dan kembali ke halaman login
-                resetForms();
-                showLogin();
-                
-                // Tampilkan pesan logout
-                showAlert('loginAlert', 'Anda telah berhasil logout. Sampai jumpa!', 'success');
+                this.ui.setButtonLoading('registerBtn', true, 'Daftar Sekarang');
+
+                try {
+                    await this.auth.register(userData);
+                    this.ui.setButtonLoading('registerBtn', false, 'Daftar Sekarang');
+                    this.ui.showAlert('registerAlert', '🎉 Registrasi berhasil! Silakan login dengan akun Anda.', 'success');
+                    
+                    setTimeout(() => {
+                        this.ui.showLogin();
+                        this.ui.showAlert('loginAlert', 'Akun berhasil dibuat! Silakan login.', 'success');
+                    }, 2000);
+                } catch (error) {
+                    this.ui.setButtonLoading('registerBtn', false, 'Daftar Sekarang');
+                    this.ui.showAlert('registerAlert', `❌ ${error.message}`, 'error');
+                }
+            }
+
+            handleLogout() {
+                if (confirm('Apakah Anda yakin ingin logout?')) {
+                    this.auth.logout();
+                    this.ui.showLogin();
+                    this.ui.showAlert('loginAlert', 'Anda telah berhasil logout. Sampai jumpa!', 'success');
+                }
             }
         }
 
         // ============================================
-        // EVENT LISTENERS & INITIALIZATION
+        // INITIALIZATION
+        // Start aplikasi
         // ============================================
-        
-        // Mencegah form submission default
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-            });
-        });
-
-        // Log informasi sistem saat halaman dimuat
-        console.log('🚀 Sistem Login & Registrasi telah dimuat');
-        console.log('📊 Total users terdaftar:', Object.keys(users).length);
-        console.log('👤 Current user:', currentUser ? currentUser.username : 'Belum login');
+        const app = new Application();
     </script>
 </body>
 </html>
